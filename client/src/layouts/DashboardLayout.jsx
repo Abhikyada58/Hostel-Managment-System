@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { 
   Home, AlertCircle, ShoppingBag, Droplets, 
   Coffee, MessageSquare, Zap, CreditCard, 
-  FileText, Bell, User, LogOut, Menu, X
+  FileText, Bell, User, LogOut, Menu, X, BarChart2
 } from 'lucide-react';
 
 const getStudentLinks = () => [
@@ -15,32 +15,36 @@ const getStudentLinks = () => [
   { name: 'Food & Mess', path: '/student/food', icon: Coffee },
   { name: 'Electricity Bill', path: '/student/electricity', icon: Zap },
   { name: 'Hostel Fees', path: '/student/fees', icon: CreditCard },
-  { name: 'Payment History', path: '/student/payments', icon: FileText },
-  { name: 'Notifications', path: '/student/notifications', icon: Bell },
-  { name: 'Profile', path: '/student/profile', icon: User },
+  { name: 'Notifications', path: '/notifications', icon: Bell },
+  { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const getAdminLinks = () => [
   { name: 'Dashboard', path: '/admin/dashboard', icon: Home },
+  { name: 'Reports & Logs', path: '/admin/reports', icon: BarChart2 },
   { name: 'Students', path: '/admin/students', icon: User },
-  // Additional admin links can be added here
+  { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const getWorkerProblemLinks = () => [
   { name: 'Dashboard', path: '/worker/problems', icon: AlertCircle },
+  { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const getWorkerLaundryLinks = () => [
   { name: 'Item Requests', path: '/worker/items', icon: ShoppingBag },
   { name: 'Laundry', path: '/worker/laundry', icon: Droplets },
+  { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const getCookLinks = () => [
   { name: 'Cook Dashboard', path: '/cook/dashboard', icon: Coffee },
+  { name: 'Profile', path: '/profile', icon: User },
 ];
 
 const getAccountantLinks = () => [
   { name: 'Dashboard', path: '/accountant/dashboard', icon: CreditCard },
+  { name: 'Profile', path: '/profile', icon: User },
 ];
 
 export default function DashboardLayout() {
@@ -126,12 +130,16 @@ export default function DashboardLayout() {
           </button>
           
           <div className="flex-1 flex justify-end items-center space-x-4">
-            <button className="text-gray-400 hover:text-gray-500 relative">
+            <Link to="/notifications" className="text-gray-400 hover:text-gray-500 relative cursor-pointer">
               <Bell size={24} />
               <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-            </button>
-            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold">
-              {profile?.name?.charAt(0) || 'U'}
+            </Link>
+            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold overflow-hidden border-2 border-white shadow-sm">
+              {profile?.avatar_url ? (
+                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                profile?.name?.charAt(0) || 'U'
+              )}
             </div>
           </div>
         </header>

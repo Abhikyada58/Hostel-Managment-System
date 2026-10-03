@@ -13,7 +13,12 @@ import ItemWorkerDashboard from './pages/worker/ItemWorkerDashboard';
 import LaundryWorkerDashboard from './pages/worker/LaundryWorkerDashboard';
 import CookDashboard from './pages/cook/CookDashboard';
 import StudentElectricity from './pages/student/StudentElectricity';
+import StudentFees from './pages/student/StudentFees';
 import AccountantDashboard from './pages/accountant/AccountantDashboard';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminReports from './pages/admin/AdminReports';
+import Notifications from './pages/shared/Notifications';
+import Profile from './pages/shared/Profile';
 
 // A simple protected route wrapper
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -104,6 +109,11 @@ function App() {
                 <StudentElectricity />
               </ProtectedRoute>
             } />
+            <Route path="student/fees" element={
+              <ProtectedRoute allowedRoles={['student']}>
+                <StudentFees />
+              </ProtectedRoute>
+            } />
             <Route path="student/*" element={
               <ProtectedRoute allowedRoles={['student']}>
                 <div className="p-8 text-center text-gray-500">Feature Coming Soon in Phase 9+</div>
@@ -144,7 +154,24 @@ function App() {
             {/* Admin Routes */}
             <Route path="admin/dashboard" element={
               <ProtectedRoute allowedRoles={['admin']}>
-                <div className="p-8 text-center text-gray-500">Admin Dashboard (Coming Soon)</div>
+                <AdminDashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="admin/reports" element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <AdminReports />
+              </ProtectedRoute>
+            } />
+
+            {/* Shared Routes */}
+            <Route path="notifications" element={
+              <ProtectedRoute allowedRoles={['student', 'admin', 'worker_problem', 'worker_laundry', 'cook', 'accountant']}>
+                <Notifications />
+              </ProtectedRoute>
+            } />
+            <Route path="profile" element={
+              <ProtectedRoute allowedRoles={['student', 'admin', 'worker_problem', 'worker_laundry', 'cook', 'accountant']}>
+                <Profile />
               </ProtectedRoute>
             } />
             
