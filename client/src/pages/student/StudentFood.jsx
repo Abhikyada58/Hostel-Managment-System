@@ -1,21 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
-import { Coffee, MessageSquare, Plus, CheckCircle, Clock } from 'lucide-react';
+import { Coffee, MessageSquare, Plus, CheckCircle, Clock, X } from 'lucide-react';
 
 export default function StudentFood() {
   const { profile } = useAuth();
-  const [activeTab, setActiveTab] = useState('menu'); // 'menu' or 'complaints'
-  
+  const [activeTab, setActiveTab] = useState('menu');
   const [menus, setMenus] = useState([]);
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
-  const [formData, setFormData] = useState({
-    type: 'query',
-    message: ''
-  });
+  const [formData, setFormData] = useState({ type: 'query', message: '' });
 
   useEffect(() => {
     if (activeTab === 'menu') fetchMenus();
@@ -25,12 +20,7 @@ export default function StudentFood() {
   const fetchMenus = async () => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('food_menus')
-        .select('*')
-        .order('menu_date', { ascending: false })
-        .limit(7);
-        
+      const { data, error } = await supabase.from('food_menus').select('*').order('menu_date', { ascending: false }).limit(7);
       if (error) throw error;
       setMenus(data || []);
     } catch (error) {
@@ -44,12 +34,7 @@ export default function StudentFood() {
     if (!profile) return;
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('food_complaints')
-        .select('*')
-        .eq('student_id', profile.id)
-        .order('created_at', { ascending: false });
-        
+      const { data, error } = await supabase.from('food_complaints').select('*').eq('student_id', profile.id).order('created_at', { ascending: false });
       if (error) throw error;
       setComplaints(data || []);
     } catch (error) {
@@ -63,13 +48,9 @@ export default function StudentFood() {
     e.preventDefault();
     try {
       const { error } = await supabase.from('food_complaints').insert([{
-        student_id: profile.id,
-        type: formData.type,
-        message: formData.message
+        student_id: profile.id, type: formData.type, message: formData.message
       }]);
-      
       if (error) throw error;
-      
       setIsModalOpen(false);
       setFormData({ type: 'query', message: '' });
       fetchComplaints();
@@ -78,90 +59,80 @@ export default function StudentFood() {
     }
   };
 
-  const statusColors = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'in_progress': 'bg-blue-100 text-blue-800',
-    'resolved': 'bg-green-100 text-green-800',
-    'closed': 'bg-gray-100 text-gray-800'
-  };
-
-  const formatText = (text) => {
-    return text.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
+  const formatText = (text) => text.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Food & Mess</h1>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', fontFamily: "'Space Grotesk', sans-serif" }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 className="page-title">Food & Mess</h1>
+          <p className="page-subtitle">View weekly menus and submit feedback</p>
+        </div>
         {activeTab === 'complaints' && (
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-          >
-            <Plus size={20} />
-            <span>New Complaint/Query</span>
+          <button className="accent-btn" onClick={() => setIsModalOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Plus size={18} /> New Query
           </button>
         )}
       </div>
 
-      {/* Tabs */}
-      <div className="flex border-b border-gray-200">
+      <div style={{ display: 'flex', borderBottom: '2px solid var(--card-border)', marginBottom: '1rem' }}>
         <button
-          className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === 'menu' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           onClick={() => setActiveTab('menu')}
+          style={{
+            padding: '1rem 2rem', background: 'none', border: 'none', cursor: 'pointer',
+            borderBottom: activeTab === 'menu' ? '2px solid var(--badge-accent-color)' : '2px solid transparent',
+            marginBottom: '-2px', color: activeTab === 'menu' ? 'var(--badge-accent-color)' : 'var(--text-muted)',
+            fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s'
+          }}
         >
-          <div className="flex items-center space-x-2">
-            <Coffee size={18} />
-            <span>Weekly Menu</span>
-          </div>
+          <Coffee size={18} /> Weekly Menu
         </button>
         <button
-          className={`px-6 py-3 font-medium text-sm border-b-2 transition-colors ${activeTab === 'complaints' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
           onClick={() => setActiveTab('complaints')}
+          style={{
+            padding: '1rem 2rem', background: 'none', border: 'none', cursor: 'pointer',
+            borderBottom: activeTab === 'complaints' ? '2px solid var(--badge-accent-color)' : '2px solid transparent',
+            marginBottom: '-2px', color: activeTab === 'complaints' ? 'var(--badge-accent-color)' : 'var(--text-muted)',
+            fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', transition: 'all 0.2s'
+          }}
         >
-          <div className="flex items-center space-x-2">
-            <MessageSquare size={18} />
-            <span>My Complaints</span>
-          </div>
+          <MessageSquare size={18} /> My Queries
         </button>
       </div>
 
-      {/* Menu Content */}
       {activeTab === 'menu' && (
-        <div className="space-y-4">
-          {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading menu...</div>
-          ) : menus.length === 0 ? (
-            <div className="bg-white p-12 text-center text-gray-500 rounded-xl shadow-sm border border-gray-100">
-              <Coffee size={48} className="mx-auto text-gray-300 mb-4" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {loading ? <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>Loading menu...</div> : menus.length === 0 ? (
+            <div className="glass-card" style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <Coffee size={48} style={{ margin: '0 auto 1rem', opacity: 0.4 }} />
               <p>The cook hasn't posted the menu yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {menus.map((menu, index) => (
-                <div key={menu.id} className={`bg-white rounded-xl shadow-sm border overflow-hidden ${index === 0 ? 'border-blue-200 ring-1 ring-blue-100' : 'border-gray-100'}`}>
-                  <div className={`p-4 border-b ${index === 0 ? 'bg-blue-50 border-blue-100' : 'bg-gray-50 border-gray-100'}`}>
-                    <h3 className="font-bold text-gray-900">
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '1.25rem' }}>
+              {menus.map((menu, idx) => (
+                <div key={menu.id} className="glass-card" style={{ padding: 0, overflow: 'hidden', border: idx === 0 ? '2px solid var(--badge-accent-border)' : undefined }}>
+                  <div style={{ padding: '1.25rem', background: idx === 0 ? 'var(--badge-accent-bg)' : 'var(--input-bg)', borderBottom: '1px solid var(--card-border)' }}>
+                    <h3 style={{ margin: 0, color: 'var(--text-primary)', fontWeight: 800, fontSize: '1.1rem' }}>
                       {new Date(menu.menu_date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
                     </h3>
-                    {index === 0 && <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Today's Menu</span>}
+                    {idx === 0 && <span style={{ color: 'var(--badge-accent-color)', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Today's Menu</span>}
                   </div>
-                  <div className="p-4 space-y-4">
+                  <div style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     <div>
-                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Breakfast</h4>
-                      <p className="text-gray-800">{menu.breakfast}</p>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>Breakfast</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{menu.breakfast}</div>
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Lunch</h4>
-                      <p className="text-gray-800">{menu.lunch}</p>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>Lunch</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{menu.lunch}</div>
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Dinner</h4>
-                      <p className="text-gray-800">{menu.dinner}</p>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.2rem' }}>Dinner</div>
+                      <div style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{menu.dinner}</div>
                     </div>
                     {menu.notes && (
-                      <div className="pt-2 mt-2 border-t border-dashed border-gray-200">
-                        <p className="text-sm text-gray-500 italic">"{menu.notes}"</p>
+                      <div style={{ marginTop: '0.5rem', paddingTop: '1rem', borderTop: '1px dashed var(--card-border)', color: 'var(--text-secondary)', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                        "{menu.notes}"
                       </div>
                     )}
                   </div>
@@ -172,39 +143,32 @@ export default function StudentFood() {
         </div>
       )}
 
-      {/* Complaints Content */}
       {activeTab === 'complaints' && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-          {loading ? (
-            <div className="p-8 text-center text-gray-500">Loading complaints...</div>
-          ) : complaints.length === 0 ? (
-            <div className="p-12 flex flex-col items-center justify-center text-gray-500">
-              <MessageSquare size={48} className="text-gray-300 mb-4" />
-              <p>You haven't submitted any queries or complaints.</p>
+        <div className="glass-card" style={{ padding: 0 }}>
+          {loading ? <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2rem' }}>Loading...</div> : complaints.length === 0 ? (
+            <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              <MessageSquare size={48} style={{ margin: '0 auto 1rem', opacity: 0.4 }} />
+              <p>You haven't submitted any queries.</p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100">
-              {complaints.map((comp) => (
-                <div key={comp.id} className="p-6">
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex items-center space-x-3">
-                      <span className={`px-2 py-1 text-xs rounded uppercase tracking-wider font-semibold ${comp.type === 'complaint' ? 'bg-red-100 text-red-700' : comp.type === 'suggestion' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
-                        {comp.type}
-                      </span>
-                      <span className="text-sm text-gray-500">{new Date(comp.created_at).toLocaleDateString()}</span>
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {complaints.map(comp => (
+                <div key={comp.id} style={{ padding: '1.5rem', borderBottom: '1px solid var(--card-border)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span className={`badge ${comp.type === 'complaint' ? 'badge-error' : comp.type === 'suggestion' ? 'badge-accent' : 'badge-progress'}`}>{comp.type}</span>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(comp.created_at).toLocaleDateString()}</span>
                     </div>
-                    <span className={`px-3 py-1 text-xs rounded-full capitalize font-medium ${statusColors[comp.status] || 'bg-gray-100'}`}>
-                      {formatText(comp.status)}
-                    </span>
+                    <span className={`badge ${comp.status === 'resolved' ? 'badge-done' : comp.status === 'in_progress' ? 'badge-progress' : 'badge-pending'}`}>{formatText(comp.status)}</span>
                   </div>
-                  <p className="text-gray-900 mt-2 font-medium">{comp.message}</p>
+                  <p style={{ color: 'var(--text-primary)', margin: '0 0 1rem 0', fontWeight: 500 }}>{comp.message}</p>
                   
                   {comp.cook_response && (
-                    <div className="mt-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                      <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 flex items-center">
-                        <CheckCircle size={14} className="mr-1" /> Cook's Response
-                      </h4>
-                      <p className="text-gray-700 text-sm">{comp.cook_response}</p>
+                    <div style={{ background: 'var(--success-bg)', border: '1px solid var(--success-border)', borderRadius: '8px', padding: '1rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', color: 'var(--success-color)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '0.4rem' }}>
+                        <CheckCircle size={14} /> Cook's Response
+                      </div>
+                      <p style={{ color: 'var(--text-primary)', margin: 0, fontSize: '0.9rem' }}>{comp.cook_response}</p>
                     </div>
                   )}
                 </div>
@@ -214,51 +178,27 @@ export default function StudentFood() {
         </div>
       )}
 
-      {/* Modal for New Complaint */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">Submit Query/Complaint</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={24} />
-              </button>
+        <div className="modal-overlay">
+          <div className="modal-box" style={{ maxWidth: '480px', width: '100%' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>New Query</h2>
+              <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={22} /></button>
             </div>
-            
-            <form onSubmit={handleSubmitComplaint} className="p-6 space-y-4">
+            <form onSubmit={handleSubmitComplaint} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-                <select 
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={formData.type}
-                  onChange={(e) => setFormData({...formData, type: e.target.value})}
-                >
+                <label className="glass-label">Type</label>
+                <select className="glass-input" value={formData.type} onChange={e => setFormData({...formData, type: e.target.value})}>
                   <option value="query">General Query</option>
                   <option value="complaint">Complaint</option>
                   <option value="suggestion">Suggestion</option>
                 </select>
               </div>
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
-                <textarea 
-                  rows="4"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Describe your issue or suggestion..."
-                  value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
-                  required
-                ></textarea>
+                <label className="glass-label">Message</label>
+                <textarea className="glass-input" rows="4" style={{ resize: 'vertical' }} placeholder="Describe your issue..." value={formData.message} onChange={e => setFormData({...formData, message: e.target.value})} required />
               </div>
-
-              <div className="pt-2">
-                <button 
-                  type="submit" 
-                  className="w-full bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                  Submit
-                </button>
-              </div>
+              <button type="submit" className="accent-btn" style={{ justifyContent: 'center' }}>Submit</button>
             </form>
           </div>
         </div>

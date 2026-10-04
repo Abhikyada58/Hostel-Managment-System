@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../supabase';
 import { Droplets, Plus, X, Upload } from 'lucide-react';
 
@@ -8,12 +8,61 @@ export default function LaundryWorkerDashboard() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
   
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+
   const [formData, setFormData] = useState({
     student_id: '',
     clothes_count: '',
     image: null
   });
+
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+      setIsCameraActive(true);
+    } catch (err) {
+      alert("Could not access camera: " + err.message);
+    }
+  };
+
+  const stopCamera = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      videoRef.current.srcObject.getTracks().forEach(track => track.stop());
+    }
+    setIsCameraActive(false);
+  };
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], "camera_capture.jpg", { type: "image/jpeg" });
+          setFormData({ ...formData, image: file });
+          stopCamera();
+        }
+      }, 'image/jpeg', 0.8);
+    }
+  };
+
+  // Close camera when modal closes
+  useEffect(() => {
+    if (!isModalOpen) {
+      stopCamera();
+    }
+  }, [isModalOpen]);
 
   useEffect(() => {
     fetchRequests();
@@ -256,25 +305,53 @@ export default function LaundryWorkerDashboard() {
               </div>
 
               <div>
-                <label className="glass-label">Upload Photo</label>
+                <label className="glass-label">Photo of Clothes</label>
                 <div style={{
                   border: '1.5px dashed var(--input-border)', borderRadius: '12px',
-                  padding: '1.5rem', textAlign: 'center', position: 'relative',
-                  background: 'var(--input-bg)'
+                  padding: formData.image || isCameraActive ? '0' : '1.5rem', 
+                  textAlign: 'center', position: 'relative', overflow: 'hidden',
+                  background: 'var(--input-bg)', minHeight: '150px',
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center'
                 }}>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    required
-                    onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
-                    style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
-                  />
-                  <Upload size={24} color="var(--text-muted)" style={{ margin: '0 auto 0.5rem' }} />
                   {formData.image ? (
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontWeight: 600 }}>{formData.image.name}</div>
+                    <>
+                      <img src={URL.createObjectURL(formData.image)} alt="Preview" style={{ width: '100%', height: 'auto', display: 'block' }} />
+                      <button type="button" onClick={() => setFormData({...formData, image: null})} style={{
+                        position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.6)', color: '#fff', 
+                        border: 'none', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                      }}>
+                        <X size={16} />
+                      </button>
+                    </>
+                  ) : isCameraActive ? (
+                    <div style={{ width: '100%', position: 'relative' }}>
+                      <video ref={videoRef} autoPlay playsInline style={{ width: '100%', display: 'block' }}></video>
+                      <button type="button" onClick={capturePhoto} className="accent-btn" style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', padding: '0.4rem 1rem' }}>
+                        Take Photo
+                      </button>
+                      <button type="button" onClick={stopCamera} style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.6)', color: '#fff', border: 'none', borderRadius: '50%', width: 30, height: 30, cursor: 'pointer' }}>
+                        <X size={16} />
+                      </button>
+                    </div>
                   ) : (
-                    <div style={{ fontSize: '0.875rem', color: 'var(--text-muted)' }}>Click or drag photo to upload</div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <button type="button" onClick={startCamera} className="neo-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>
+                        📷 Open Camera
+                      </button>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>OR</div>
+                      <div style={{ position: 'relative' }}>
+                        <button type="button" className="neo-btn" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', pointerEvents: 'none' }}>
+                          <Upload size={16} style={{ display: 'inline', marginRight: '5px' }} /> Upload File
+                        </button>
+                        <input
+                          type="file" accept="image/*"
+                          onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
+                          style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }}
+                        />
+                      </div>
+                    </div>
                   )}
+                  <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
                 </div>
               </div>
 
