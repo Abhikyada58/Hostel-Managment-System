@@ -44,12 +44,15 @@ export default function LaundryWorkerDashboard() {
     }
   };
 
-  const statusColors = {
-    'pending_pickup': 'bg-yellow-100 text-yellow-800',
-    'washing': 'bg-blue-100 text-blue-800',
-    'ready_for_delivery': 'bg-purple-100 text-purple-800',
-    'delivered': 'bg-indigo-100 text-indigo-800',
-    'completed': 'bg-green-100 text-green-800'
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'pending_pickup':      return 'badge badge-pending';
+      case 'washing':             return 'badge badge-progress';
+      case 'ready_for_delivery':  return 'badge badge-progress';
+      case 'delivered':           return 'badge badge-done';
+      case 'completed':           return 'badge badge-done';
+      default:                    return 'badge badge-pending';
+    }
   };
 
   const formatStatus = (status) => {
@@ -57,47 +60,54 @@ export default function LaundryWorkerDashboard() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Worker Dashboard - Laundry</h1>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', fontFamily: "'Space Grotesk', sans-serif" }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 className="page-title">Worker Dashboard</h1>
+          <p className="page-subtitle">Manage laundry pickup & delivery for students</p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Table Card */}
+      <div className="glass-card" style={{ padding: '1.5rem' }}>
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading requests...</div>
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            Loading requests...
+          </div>
         ) : requests.length === 0 ? (
-          <div className="p-12 flex flex-col items-center justify-center text-gray-500">
-            <Droplets size={48} className="text-gray-300 mb-4" />
+          <div style={{ padding: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+            <Droplets size={48} style={{ marginBottom: '1rem', opacity: 0.4 }} />
             <p>No laundry requests found.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="glass-table">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100 text-sm text-gray-500 uppercase tracking-wider">
-                  <th className="p-4 font-medium">Room</th>
-                  <th className="p-4 font-medium">Student</th>
-                  <th className="p-4 font-medium">Clothes</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium">Actions</th>
+                <tr>
+                  <th>Room</th>
+                  <th>Student</th>
+                  <th>Clothes</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {requests.map((req) => (
-                  <tr key={req.id} className="hover:bg-gray-50">
-                    <td className="p-4 text-sm font-bold text-gray-900">{req.room_number}</td>
-                    <td className="p-4 text-sm text-gray-600">{req.profiles?.name || 'Unknown'}</td>
-                    <td className="p-4 text-sm text-gray-900">{req.clothes_count} items</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 text-xs rounded-full ${statusColors[req.status] || 'bg-gray-100'}`}>
+                  <tr key={req.id}>
+                    <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{req.room_number}</td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{req.profiles?.name || 'Unknown'}</td>
+                    <td style={{ color: 'var(--text-primary)' }}>{req.clothes_count} items</td>
+                    <td>
+                      <span className={getStatusBadgeClass(req.status)}>
                         {formatStatus(req.status)}
                       </span>
                     </td>
-                    <td className="p-4 text-sm">
+                    <td>
                       {req.status !== 'completed' && (
-                        <button 
+                        <button
                           onClick={() => setSelectedRequest(req)}
-                          className="text-blue-600 hover:underline font-medium"
+                          style={{ color: 'var(--text-link)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}
                         >
                           Manage
                         </button>
@@ -113,48 +123,58 @@ export default function LaundryWorkerDashboard() {
 
       {/* Action Modal */}
       {selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden p-6 space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Manage Laundry Request</h2>
-            
-            <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
-              <p><strong>Room:</strong> {selectedRequest.room_number}</p>
-              <p><strong>Student:</strong> {selectedRequest.profiles?.name}</p>
-              <p><strong>Clothes:</strong> {selectedRequest.clothes_count} pieces</p>
+        <div className="modal-overlay">
+          <div className="modal-box" style={{ width: '100%', maxWidth: '480px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Manage Laundry Request
+            </h2>
+
+            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '10px', padding: '1rem', marginBottom: '1.25rem', fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Room:</strong> {selectedRequest.room_number}
+              </p>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Student:</strong> {selectedRequest.profiles?.name}
+              </p>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Clothes:</strong> {selectedRequest.clothes_count} pieces
+              </p>
               {selectedRequest.notes && (
-                <p className="mt-2"><strong>Notes:</strong> {selectedRequest.notes}</p>
+                <p style={{ color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                  <strong style={{ color: 'var(--text-primary)' }}>Notes:</strong> {selectedRequest.notes}
+                </p>
               )}
             </div>
 
-            <div className="pt-2 grid grid-cols-1 gap-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {selectedRequest.status === 'pending_pickup' && (
-                <button 
+                <button
                   onClick={() => updateStatus(selectedRequest.id, 'washing')}
-                  className="bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 transition"
+                  className="accent-btn"
                 >
-                  Confirm Pickup & Start Washing
+                  Confirm Pickup &amp; Start Washing
                 </button>
               )}
               {selectedRequest.status === 'washing' && (
-                <button 
+                <button
                   onClick={() => updateStatus(selectedRequest.id, 'ready_for_delivery')}
-                  className="bg-purple-600 text-white font-medium py-2 rounded-lg hover:bg-purple-700 transition"
+                  className="accent-btn"
                 >
                   Mark as Ready for Delivery
                 </button>
               )}
               {selectedRequest.status === 'ready_for_delivery' && (
-                <button 
+                <button
                   onClick={() => updateStatus(selectedRequest.id, 'delivered')}
-                  className="bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700 transition"
+                  className="accent-btn"
                 >
                   Mark as Delivered to Room
                 </button>
               )}
-              
-              <button 
+
+              <button
                 onClick={() => setSelectedRequest(null)}
-                className="border border-gray-300 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-50 transition"
+                className="neo-btn"
               >
                 Cancel
               </button>

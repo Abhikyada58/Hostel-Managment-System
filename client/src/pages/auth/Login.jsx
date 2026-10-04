@@ -28,65 +28,79 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
-        <div>
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100">
-            <LogIn className="h-6 w-6 text-blue-600" />
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '2rem 1rem', fontFamily: "'Space Grotesk', sans-serif"
+    }}>
+      <div style={{ width: '100%', maxWidth: '420px' }}>
+
+        {/* Logo */}
+        <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
+          <div style={{
+            width: '60px', height: '60px', margin: '0 auto 1.25rem',
+            background: 'var(--accent-gradient)',
+            borderRadius: '18px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            border: '2px solid rgba(255,255,255,0.2)',
+            boxShadow: '0 8px 32px var(--accent-glow), var(--neo-shadow)'
+          }}>
+            <LogIn size={28} color="#fff" strokeWidth={2.5} />
           </div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Hostel Management System
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
+          <h1 style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.03em', marginBottom: '0.5rem', margin: '0 0 0.5rem' }}>
+            HostelApp
+          </h1>
+          <p style={{ fontSize: '0.875rem', color: 'var(--text-muted)', fontWeight: 500, margin: 0 }}>
             Sign in to your account
           </p>
         </div>
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          {error && (
-            <div className="bg-red-50 text-red-500 p-3 rounded text-sm text-center">
-              {error}
-            </div>
-          )}
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <input
-                type="email"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Email address"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div>
-              <input
-                type="password"
-                required
-                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
-          </div>
 
-          <div>
+        {/* Card */}
+        <div className="glass-card" style={{ padding: '2rem' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            {error && (
+              <div style={{
+                padding: '0.875rem 1rem', borderRadius: '12px',
+                background: 'var(--error-bg)', border: '1.5px solid var(--error-border)',
+                color: 'var(--error-color)', fontSize: '0.8rem', fontWeight: 600, textAlign: 'center'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <div>
+              <label className="glass-label">Email Address</label>
+              <input
+                type="email" required placeholder="you@example.com"
+                value={email} onChange={(e) => setEmail(e.target.value)}
+                className="glass-input"
+              />
+            </div>
+
+            <div>
+              <label className="glass-label">Password</label>
+              <input
+                type="password" required placeholder="••••••••"
+                value={password} onChange={(e) => setPassword(e.target.value)}
+                className="glass-input"
+              />
+            </div>
+
             <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+              type="submit" disabled={loading}
+              className="accent-btn"
+              style={{ width: '100%', padding: '0.875rem', fontSize: '0.9rem', opacity: loading ? 0.6 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
             >
-              {loading ? 'Signing in...' : 'Sign in'}
+              {loading ? 'Signing in...' : '→ Sign In'}
             </button>
-          </div>
-          
-          <div className="text-center text-sm">
-            <span className="text-gray-600">Don't have an account? </span>
-            <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              Register here
-            </Link>
-          </div>
-        </form>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div style={{ textAlign: 'center', marginTop: '1.5rem', fontSize: '0.875rem', color: 'var(--text-muted)' }}>
+          Don't have an account?{' '}
+          <Link to="/register" style={{ color: 'var(--text-link)', fontWeight: 700, textDecoration: 'none' }}>
+            Register here
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../supabase';
-import { AlertCircle, CheckCircle, Clock } from 'lucide-react';
+import { AlertCircle } from 'lucide-react';
 
 export default function ProblemWorkerDashboard() {
   const [problems, setProblems] = useState([]);
@@ -47,59 +47,69 @@ export default function ProblemWorkerDashboard() {
     }
   };
 
-  const statusColors = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'accepted': 'bg-blue-100 text-blue-800',
-    'in progress': 'bg-purple-100 text-purple-800',
-    'solved': 'bg-green-100 text-green-800',
-    'closed': 'bg-gray-100 text-gray-800',
-    'reopened': 'bg-red-100 text-red-800'
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'pending':   return 'badge badge-pending';
+      case 'in progress': return 'badge badge-progress';
+      case 'solved':    return 'badge badge-done';
+      case 'closed':    return 'badge badge-done';
+      case 'reopened':  return 'badge badge-error';
+      case 'accepted':  return 'badge badge-progress';
+      default:          return 'badge badge-pending';
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Worker Dashboard - Problems</h1>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', fontFamily: "'Space Grotesk', sans-serif" }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 className="page-title">Worker Dashboard</h1>
+          <p className="page-subtitle">Manage & resolve reported maintenance problems</p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Table Card */}
+      <div className="glass-card" style={{ padding: '1.5rem' }}>
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading problems...</div>
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            Loading problems...
+          </div>
         ) : problems.length === 0 ? (
-          <div className="p-12 flex flex-col items-center justify-center text-gray-500">
-            <AlertCircle size={48} className="text-gray-300 mb-4" />
+          <div style={{ padding: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+            <AlertCircle size={48} style={{ marginBottom: '1rem', opacity: 0.4 }} />
             <p>No problems assigned to you.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="glass-table">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100 text-sm text-gray-500 uppercase tracking-wider">
-                  <th className="p-4 font-medium">Room</th>
-                  <th className="p-4 font-medium">Student</th>
-                  <th className="p-4 font-medium">Category</th>
-                  <th className="p-4 font-medium">Description</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium">Actions</th>
+                <tr>
+                  <th>Room</th>
+                  <th>Student</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {problems.map((prob) => (
-                  <tr key={prob.id} className="hover:bg-gray-50">
-                    <td className="p-4 text-sm font-bold text-gray-900">{prob.room_number}</td>
-                    <td className="p-4 text-sm text-gray-600">{prob.profiles?.name || 'Unknown'}</td>
-                    <td className="p-4 text-sm font-medium text-gray-900">{prob.category}</td>
-                    <td className="p-4 text-sm text-gray-600 max-w-xs truncate">{prob.description}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 text-xs rounded-full capitalize ${statusColors[prob.status] || 'bg-gray-100'}`}>
+                  <tr key={prob.id}>
+                    <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{prob.room_number}</td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{prob.profiles?.name || 'Unknown'}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{prob.category}</td>
+                    <td style={{ color: 'var(--text-secondary)', maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{prob.description}</td>
+                    <td>
+                      <span className={getStatusBadgeClass(prob.status)} style={{ textTransform: 'capitalize' }}>
                         {prob.status}
                       </span>
                     </td>
-                    <td className="p-4 text-sm">
+                    <td>
                       {prob.status !== 'closed' && (
-                        <button 
+                        <button
                           onClick={() => setSelectedProblem(prob)}
-                          className="text-blue-600 hover:underline font-medium"
+                          style={{ color: 'var(--text-link)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}
                         >
                           Manage
                         </button>
@@ -115,56 +125,46 @@ export default function ProblemWorkerDashboard() {
 
       {/* Action Modal */}
       {selectedProblem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden p-6 space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Manage Problem</h2>
-            
-            <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
-              <p><strong>Room:</strong> {selectedProblem.room_number}</p>
-              <p><strong>Category:</strong> {selectedProblem.category}</p>
-              <p className="mt-2 text-gray-900">{selectedProblem.description}</p>
+        <div className="modal-overlay">
+          <div className="modal-box" style={{ width: '100%', maxWidth: '480px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Manage Problem
+            </h2>
+
+            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '10px', padding: '1rem', marginBottom: '1.25rem', fontSize: '0.875rem' }}>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Room:</strong> {selectedProblem.room_number}
+              </p>
+              <p style={{ color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Category:</strong> {selectedProblem.category}
+              </p>
+              <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>{selectedProblem.description}</p>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Add Worker Note (Optional)</label>
-              <textarea 
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label className="glass-label">Add Worker Note (Optional)</label>
+              <textarea
                 rows="2"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="glass-input"
+                style={{ width: '100%', resize: 'vertical', fontFamily: "'Space Grotesk', sans-serif" }}
                 placeholder="E.g., Need to buy a new wire..."
                 value={workerNote}
                 onChange={(e) => setWorkerNote(e.target.value)}
-              ></textarea>
+              />
             </div>
 
-            <div className="pt-2 grid grid-cols-2 gap-3">
-              {['pending', 'reopened'].includes(selectedProblem.status) && (
-                <button 
-                  onClick={() => updateStatus(selectedProblem.id, 'accepted')}
-                  className="bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                  Accept Task
-                </button>
-              )}
-              {selectedProblem.status === 'accepted' && (
-                <button 
-                  onClick={() => updateStatus(selectedProblem.id, 'in progress')}
-                  className="bg-purple-600 text-white font-medium py-2 rounded-lg hover:bg-purple-700 transition"
-                >
-                  Start Work (In Progress)
-                </button>
-              )}
-              {selectedProblem.status === 'in progress' && (
-                <button 
-                  onClick={() => updateStatus(selectedProblem.id, 'solved')}
-                  className="bg-green-600 text-white font-medium py-2 rounded-lg hover:bg-green-700 transition"
-                >
-                  Mark as Solved
-                </button>
-              )}
-              
-              <button 
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.75rem' }}>
+              <button
+                onClick={() => updateStatus(selectedProblem.id, 'solved')}
+                className="accent-btn"
+              >
+                Mark as Done
+              </button>
+
+              <button
                 onClick={() => setSelectedProblem(null)}
-                className="col-span-full border border-gray-300 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-50 transition"
+                className="neo-btn"
+                style={{ gridColumn: '1 / -1' }}
               >
                 Cancel
               </button>

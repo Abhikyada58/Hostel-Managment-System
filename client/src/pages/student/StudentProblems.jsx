@@ -53,7 +53,7 @@ export default function StudentProblems() {
       
       setIsModalOpen(false);
       setFormData({ category: 'Electrical', priority: 'low', description: '' });
-      fetchProblems(); // Refresh the list
+      fetchProblems();
     } catch (error) {
       alert(error.message);
     }
@@ -72,83 +72,106 @@ export default function StudentProblems() {
     }
   };
 
-  const statusColors = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'accepted': 'bg-blue-100 text-blue-800',
-    'in progress': 'bg-purple-100 text-purple-800',
-    'solved': 'bg-green-100 text-green-800',
-    'closed': 'bg-gray-100 text-gray-800',
-    'reopened': 'bg-red-100 text-red-800'
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'pending':    return 'badge badge-pending';
+      case 'accepted':   return 'badge badge-progress';
+      case 'in progress': return 'badge badge-progress';
+      case 'solved':     return 'badge badge-done';
+      case 'closed':     return 'badge badge-done';
+      case 'reopened':   return 'badge badge-error';
+      default:           return 'badge badge-pending';
+    }
+  };
+
+  const getPriorityBadgeClass = (priority) => {
+    return priority === 'emergency' ? 'badge badge-error' : 'badge badge-pending';
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">My Problems</h1>
-        <button 
+    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 className="page-title">My Problems</h1>
+          <p className="page-subtitle">Track and manage maintenance issues in your room</p>
+        </div>
+        <button
+          className="accent-btn"
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
         >
-          <Plus size={20} />
-          <span>Report Problem</span>
+          <Plus size={18} />
+          Report Problem
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Table Card */}
+      <div className="glass-card" style={{ padding: '0', overflow: 'hidden' }}>
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading your problems...</div>
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)', fontFamily: "'Space Grotesk', sans-serif" }}>
+            Loading your problems...
+          </div>
         ) : problems.length === 0 ? (
-          <div className="p-12 flex flex-col items-center justify-center text-gray-500">
-            <AlertCircle size={48} className="text-gray-300 mb-4" />
-            <p>You haven't reported any problems yet.</p>
+          <div style={{ padding: '4rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem', color: 'var(--text-muted)' }}>
+            <AlertCircle size={48} style={{ color: 'var(--text-muted)', opacity: 0.4 }} />
+            <p style={{ fontFamily: "'Space Grotesk', sans-serif" }}>You haven't reported any problems yet.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="glass-table">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100 text-sm text-gray-500 uppercase tracking-wider">
-                  <th className="p-4 font-medium">Date</th>
-                  <th className="p-4 font-medium">Category</th>
-                  <th className="p-4 font-medium">Description</th>
-                  <th className="p-4 font-medium">Priority</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium">Action</th>
+                <tr>
+                  <th>Date</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Priority</th>
+                  <th>Status</th>
+                  <th>Action</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {problems.map((prob) => (
-                  <tr key={prob.id} className="hover:bg-gray-50">
-                    <td className="p-4 text-sm text-gray-600">
+                  <tr key={prob.id}>
+                    <td style={{ color: 'var(--text-secondary)' }}>
                       {new Date(prob.created_at).toLocaleDateString()}
                     </td>
-                    <td className="p-4 text-sm font-medium text-gray-900">{prob.category}</td>
-                    <td className="p-4 text-sm text-gray-600 max-w-xs truncate">{prob.description}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 text-xs rounded-full capitalize ${
-                        prob.priority === 'emergency' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
-                      }`}>
+                    <td style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{prob.category}</td>
+                    <td style={{ color: 'var(--text-secondary)', maxWidth: '260px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      {prob.description}
+                    </td>
+                    <td>
+                      <span className={getPriorityBadgeClass(prob.priority)} style={{ textTransform: 'capitalize' }}>
                         {prob.priority}
                       </span>
                     </td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 text-xs rounded-full capitalize ${statusColors[prob.status] || 'bg-gray-100'}`}>
+                    <td>
+                      <span className={getStatusBadgeClass(prob.status)} style={{ textTransform: 'capitalize' }}>
                         {prob.status}
                       </span>
                     </td>
-                    <td className="p-4 text-sm">
+                    <td>
                       {prob.status === 'solved' && (
-                        <div className="flex space-x-2">
-                          <button 
+                        <div style={{ display: 'flex', gap: '0.75rem' }}>
+                          <button
                             onClick={() => updateStatus(prob.id, 'closed')}
-                            className="text-green-600 hover:underline font-medium"
+                            style={{
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              color: 'var(--success-color)', fontWeight: 600,
+                              fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.8rem'
+                            }}
                           >
-                            Confirm Solved
+                            ✓ Confirm Solved
                           </button>
-                          <button 
+                          <button
                             onClick={() => updateStatus(prob.id, 'reopened')}
-                            className="text-red-600 hover:underline font-medium"
+                            style={{
+                              background: 'none', border: 'none', cursor: 'pointer',
+                              color: 'var(--error-color)', fontWeight: 600,
+                              fontFamily: "'Space Grotesk', sans-serif", fontSize: '0.8rem'
+                            }}
                           >
-                            Reopen
+                            ↩ Reopen
                           </button>
                         </div>
                       )}
@@ -161,24 +184,29 @@ export default function StudentProblems() {
         )}
       </div>
 
-      {/* Modal for reporting problem */}
+      {/* Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b border-gray-100">
-              <h2 className="text-xl font-bold text-gray-900">Report a Problem</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
-                <X size={24} />
+        <div className="modal-overlay">
+          <div className="modal-box" style={{ width: '100%', maxWidth: '480px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h2 style={{ fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)', margin: 0 }}>
+                Report a Problem
+              </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}
+              >
+                <X size={22} />
               </button>
             </div>
-            
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-                <select 
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <label className="glass-label">Category</label>
+                <select
+                  className="glass-input"
                   value={formData.category}
-                  onChange={(e) => setFormData({...formData, category: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                 >
                   {['Electrical', 'Plumbing', 'Fan', 'Light', 'AC', 'Furniture', 'Bathroom', 'Water', 'Internet', 'Other'].map(cat => (
                     <option key={cat} value={cat}>{cat}</option>
@@ -187,11 +215,11 @@ export default function StudentProblems() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Priority</label>
-                <select 
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <label className="glass-label">Priority</label>
+                <select
+                  className="glass-input"
                   value={formData.priority}
-                  onChange={(e) => setFormData({...formData, priority: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -201,25 +229,21 @@ export default function StudentProblems() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <textarea 
+                <label className="glass-label">Description</label>
+                <textarea
                   required
                   rows="4"
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="glass-input"
+                  style={{ resize: 'vertical' }}
                   placeholder="Describe the issue in detail..."
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                ></textarea>
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                />
               </div>
 
-              <div className="pt-2">
-                <button 
-                  type="submit" 
-                  className="w-full bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                  Submit Problem
-                </button>
-              </div>
+              <button type="submit" className="accent-btn" style={{ width: '100%', justifyContent: 'center' }}>
+                Submit Problem
+              </button>
             </form>
           </div>
         </div>

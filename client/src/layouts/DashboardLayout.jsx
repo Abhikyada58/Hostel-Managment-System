@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { 
   Home, AlertCircle, ShoppingBag, Droplets, 
-  Coffee, MessageSquare, Zap, CreditCard, 
-  FileText, Bell, User, LogOut, Menu, X, BarChart2
+  Coffee, Zap, CreditCard, 
+  Bell, User, LogOut, Menu, X, BarChart2, ChevronRight,
+  Sun, Moon
 } from 'lucide-react';
 
 const getStudentLinks = () => [
@@ -49,6 +51,7 @@ const getAccountantLinks = () => [
 
 export default function DashboardLayout() {
   const { profile, signOut } = useAuth();
+  const { theme, toggleTheme, isDark } = useTheme();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -59,37 +62,74 @@ export default function DashboardLayout() {
   else if (profile?.role === 'worker_laundry') links = getWorkerLaundryLinks();
   else if (profile?.role === 'cook') links = getCookLinks();
   else if (profile?.role === 'accountant') links = getAccountantLinks();
-  // Other roles will be added as we progress through the phases
 
-  const handleLogout = async () => {
-    await signOut();
-  };
+  const handleLogout = async () => { await signOut(); };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex">
-      {/* Mobile Sidebar Overlay */}
-      <div 
-        className={`fixed inset-0 bg-gray-900 bg-opacity-50 z-20 md:hidden ${sidebarOpen ? 'block' : 'hidden'}`}
+    <div style={{ minHeight: '100vh', display: 'flex', fontFamily: "'Space Grotesk', sans-serif" }}>
+      {/* Mobile Overlay */}
+      <div
+        className={`fixed inset-0 z-40 md:hidden transition-opacity duration-300 ${sidebarOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+        style={{ background: 'var(--overlay)', backdropFilter: 'blur(4px)' }}
         onClick={() => setSidebarOpen(false)}
-      ></div>
+      />
 
-      {/* Sidebar */}
-      <aside 
-        className={`fixed inset-y-0 left-0 w-64 bg-slate-900 text-white transform transition-transform duration-200 ease-in-out z-30 md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      {/* ─── SIDEBAR ─────────────────────────── */}
+      <aside
+        className={`sidebar fixed inset-y-0 left-0 z-50 flex flex-col transition-transform duration-300 md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ width: '272px', flexShrink: 0 }}
       >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-slate-700 bg-slate-800">
-          <span className="text-lg font-bold">Hostel Manager</span>
-          <button onClick={() => setSidebarOpen(false)} className="md:hidden">
-            <X size={24} />
-          </button>
+        {/* Logo */}
+        <div style={{ padding: '1.75rem 1.5rem 1.25rem', borderBottom: '1px solid var(--divider)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <div style={{
+                width: '40px', height: '40px',
+                background: 'var(--accent-gradient)',
+                borderRadius: '12px',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                border: '2px solid rgba(255,255,255,0.2)',
+                boxShadow: '0 8px 24px var(--accent-glow), 3px 3px 0 rgba(0,0,0,0.25)'
+              }}>
+                <Home size={20} color="#fff" strokeWidth={2.5} />
+              </div>
+              <div>
+                <div style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>HostelApp</div>
+                <div style={{ fontSize: '0.62rem', color: 'var(--text-muted)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Management</div>
+              </div>
+            </div>
+            <button onClick={() => setSidebarOpen(false)} className="md:hidden" style={{ color: 'var(--text-muted)', padding: '4px', background: 'none', border: 'none', cursor: 'pointer' }}>
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
-        <div className="p-4 border-b border-slate-800">
-          <p className="text-sm font-medium">{profile?.name || 'User'}</p>
-          <p className="text-xs text-slate-400 capitalize">{profile?.role}</p>
+        {/* User Info */}
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--divider)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.875rem' }}>
+            <div style={{
+              width: '44px', height: '44px', borderRadius: '12px', overflow: 'hidden',
+              background: 'var(--badge-accent-bg)',
+              border: '2px solid var(--nav-active-border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--accent)' }}>{profile?.name?.charAt(0) || 'U'}</span>
+              }
+            </div>
+            <div style={{ overflow: 'hidden' }}>
+              <div style={{ fontSize: '0.875rem', fontWeight: 700, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{profile?.name || 'User'}</div>
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'var(--text-link)' }}>
+                {profile?.role?.replace('_', ' ')}
+              </div>
+            </div>
+          </div>
         </div>
 
-        <nav className="p-4 space-y-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
+        {/* Nav Links */}
+        <nav style={{ flex: 1, padding: '1rem 0.875rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {links.map((link) => {
             const Icon = link.icon;
             const isActive = location.pathname === link.path;
@@ -97,55 +137,133 @@ export default function DashboardLayout() {
               <Link
                 key={link.name}
                 to={link.path}
-                className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors ${
-                  isActive ? 'bg-blue-600 text-white' : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`}
+                className={`nav-link ${isActive ? 'active' : ''}`}
                 onClick={() => setSidebarOpen(false)}
               >
-                <Icon size={20} />
-                <span className="text-sm font-medium">{link.name}</span>
+                <Icon size={18} strokeWidth={isActive ? 2.5 : 2} />
+                <span>{link.name}</span>
+                {isActive && <ChevronRight size={14} style={{ marginLeft: 'auto', opacity: 0.5 }} />}
               </Link>
             );
           })}
+        </nav>
 
+        {/* Logout */}
+        <div style={{ padding: '0.875rem', borderTop: '1px solid var(--divider)' }}>
           <button
             onClick={handleLogout}
-            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-red-400 hover:bg-slate-800 hover:text-red-300 transition-colors mt-4"
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: '0.75rem',
+              padding: '0.75rem 1rem', borderRadius: '14px',
+              color: 'var(--error-color)', fontWeight: 600, fontSize: '0.875rem',
+              background: 'var(--error-bg)', border: '1.5px solid var(--error-border)',
+              cursor: 'pointer', fontFamily: "'Space Grotesk', sans-serif"
+            }}
           >
-            <LogOut size={20} />
-            <span className="text-sm font-medium">Logout</span>
+            <LogOut size={18} strokeWidth={2.5} />
+            Logout
           </button>
-        </nav>
+        </div>
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Header */}
-        <header className="h-16 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-white border-b border-gray-200 shadow-sm z-10">
-          <button 
-            onClick={() => setSidebarOpen(true)}
-            className="md:hidden text-gray-500 hover:text-gray-700"
-          >
-            <Menu size={24} />
-          </button>
-          
-          <div className="flex-1 flex justify-end items-center space-x-4">
-            <Link to="/notifications" className="text-gray-400 hover:text-gray-500 relative cursor-pointer">
-              <Bell size={24} />
-              <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-            </Link>
-            <div className="h-8 w-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold overflow-hidden border-2 border-white shadow-sm">
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-              ) : (
-                profile?.name?.charAt(0) || 'U'
-              )}
+      {/* ─── MAIN ────────────────────────────── */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+        {/* Header */}
+        <header className="app-header" style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '1rem 2rem', position: 'sticky', top: 0, zIndex: 30
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              className="md:hidden"
+              style={{
+                background: 'var(--card-bg)', border: '1.5px solid var(--card-border)',
+                borderRadius: '10px', padding: '8px', color: 'var(--text-secondary)',
+                cursor: 'pointer'
+              }}
+            >
+              <Menu size={20} />
+            </button>
+            <div className="hidden sm:block">
+              <div style={{ fontSize: '0.65rem', fontWeight: 700, color: 'var(--text-muted)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '2px' }}>
+                Welcome back
+              </div>
+              <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+                {profile?.name?.split(' ')[0]} 👋
+              </div>
             </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            {/* Search bar */}
+            <div className="hidden md:flex" style={{
+              alignItems: 'center', gap: '0.5rem',
+              background: 'var(--input-bg)', border: '1.5px solid var(--input-border)',
+              borderRadius: '12px', padding: '0.5rem 1rem'
+            }}>
+              <input
+                type="text"
+                placeholder="Search..."
+                style={{
+                  background: 'transparent', border: 'none', outline: 'none',
+                  color: 'var(--text-primary)', fontSize: '0.875rem', width: '160px',
+                  fontFamily: "'Space Grotesk', sans-serif"
+                }}
+              />
+            </div>
+
+            {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              style={{
+                padding: '10px',
+                background: 'var(--card-bg)', border: '1.5px solid var(--card-border)',
+                borderRadius: '12px', color: 'var(--text-secondary)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer', transition: 'all 0.2s ease',
+                boxShadow: isDark ? 'none' : 'var(--neo-shadow)'
+              }}
+            >
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
+            {/* Notification Bell */}
+            <Link to="/notifications" style={{
+              position: 'relative', padding: '10px',
+              background: 'var(--card-bg)', border: '1.5px solid var(--card-border)',
+              borderRadius: '12px', color: 'var(--text-secondary)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s ease', cursor: 'pointer', textDecoration: 'none'
+            }}>
+              <Bell size={20} />
+              <span style={{
+                position: 'absolute', top: '9px', right: '9px',
+                width: '8px', height: '8px', borderRadius: '50%',
+                background: '#ef4444', border: '2px solid var(--app-bg)'
+              }} />
+            </Link>
+
+            {/* Avatar */}
+            <Link to="/profile" style={{
+              width: '42px', height: '42px', borderRadius: '12px', overflow: 'hidden',
+              background: 'var(--accent-gradient)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              border: '2px solid rgba(255,255,255,0.2)', cursor: 'pointer',
+              boxShadow: '0 4px 16px var(--accent-glow), var(--neo-shadow)',
+              flexShrink: 0, textDecoration: 'none'
+            }}>
+              {profile?.avatar_url
+                ? <img src={profile.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <span style={{ fontWeight: 800, color: '#fff', fontSize: '1rem' }}>{profile?.name?.charAt(0) || 'U'}</span>
+              }
+            </Link>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
+        {/* Content */}
+        <main style={{ flex: 1, overflowY: 'auto', padding: '2rem' }}>
           <Outlet />
         </main>
       </div>

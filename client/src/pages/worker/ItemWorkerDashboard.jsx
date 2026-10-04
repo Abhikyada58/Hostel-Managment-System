@@ -44,58 +44,68 @@ export default function ItemWorkerDashboard() {
     }
   };
 
-  const statusColors = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'accepted': 'bg-blue-100 text-blue-800',
-    'preparing': 'bg-purple-100 text-purple-800',
-    'delivered': 'bg-indigo-100 text-indigo-800',
-    'completed': 'bg-green-100 text-green-800'
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'pending':   return 'badge badge-pending';
+      case 'accepted':  return 'badge badge-progress';
+      case 'preparing': return 'badge badge-progress';
+      case 'delivered': return 'badge badge-done';
+      case 'completed': return 'badge badge-done';
+      default:          return 'badge badge-pending';
+    }
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-gray-900">Worker Dashboard - Items</h1>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', fontFamily: "'Space Grotesk', sans-serif" }}>
+      {/* Header */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <h1 className="page-title">Worker Dashboard</h1>
+          <p className="page-subtitle">Manage item requests from students</p>
+        </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+      {/* Table Card */}
+      <div className="glass-card" style={{ padding: '1.5rem' }}>
         {loading ? (
-          <div className="p-8 text-center text-gray-500">Loading requests...</div>
+          <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+            Loading requests...
+          </div>
         ) : requests.length === 0 ? (
-          <div className="p-12 flex flex-col items-center justify-center text-gray-500">
-            <ShoppingBag size={48} className="text-gray-300 mb-4" />
+          <div style={{ padding: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+            <ShoppingBag size={48} style={{ marginBottom: '1rem', opacity: 0.4 }} />
             <p>No item requests found.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="glass-table">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100 text-sm text-gray-500 uppercase tracking-wider">
-                  <th className="p-4 font-medium">Room</th>
-                  <th className="p-4 font-medium">Student</th>
-                  <th className="p-4 font-medium">Item</th>
-                  <th className="p-4 font-medium">Qty</th>
-                  <th className="p-4 font-medium">Status</th>
-                  <th className="p-4 font-medium">Actions</th>
+                <tr>
+                  <th>Room</th>
+                  <th>Student</th>
+                  <th>Item</th>
+                  <th>Qty</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody>
                 {requests.map((req) => (
-                  <tr key={req.id} className="hover:bg-gray-50">
-                    <td className="p-4 text-sm font-bold text-gray-900">{req.room_number}</td>
-                    <td className="p-4 text-sm text-gray-600">{req.profiles?.name || 'Unknown'}</td>
-                    <td className="p-4 text-sm font-medium text-gray-900">{req.item_name}</td>
-                    <td className="p-4 text-sm text-gray-900">{req.quantity}</td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 text-xs rounded-full capitalize ${statusColors[req.status] || 'bg-gray-100'}`}>
+                  <tr key={req.id}>
+                    <td style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{req.room_number}</td>
+                    <td style={{ color: 'var(--text-secondary)' }}>{req.profiles?.name || 'Unknown'}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{req.item_name}</td>
+                    <td style={{ color: 'var(--text-primary)' }}>{req.quantity}</td>
+                    <td>
+                      <span className={getStatusBadgeClass(req.status)} style={{ textTransform: 'capitalize' }}>
                         {req.status}
                       </span>
                     </td>
-                    <td className="p-4 text-sm">
+                    <td>
                       {req.status !== 'completed' && (
-                        <button 
+                        <button
                           onClick={() => setSelectedRequest(req)}
-                          className="text-blue-600 hover:underline font-medium"
+                          style={{ color: 'var(--text-link)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.875rem' }}
                         >
                           Manage
                         </button>
@@ -111,48 +121,58 @@ export default function ItemWorkerDashboard() {
 
       {/* Action Modal */}
       {selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden p-6 space-y-4">
-            <h2 className="text-xl font-bold text-gray-900">Manage Item Request</h2>
-            
-            <div className="bg-gray-50 p-4 rounded-lg text-sm text-gray-700">
-              <p><strong>Room:</strong> {selectedRequest.room_number}</p>
-              <p><strong>Student:</strong> {selectedRequest.profiles?.name}</p>
-              <p><strong>Item:</strong> {selectedRequest.item_name} (x{selectedRequest.quantity})</p>
+        <div className="modal-overlay">
+          <div className="modal-box" style={{ width: '100%', maxWidth: '480px' }}>
+            <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '1.25rem', fontFamily: "'Space Grotesk', sans-serif" }}>
+              Manage Item Request
+            </h2>
+
+            <div style={{ background: 'var(--input-bg)', border: '1px solid var(--card-border)', borderRadius: '10px', padding: '1rem', marginBottom: '1.25rem', fontSize: '0.875rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Room:</strong> {selectedRequest.room_number}
+              </p>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Student:</strong> {selectedRequest.profiles?.name}
+              </p>
+              <p style={{ color: 'var(--text-secondary)' }}>
+                <strong style={{ color: 'var(--text-primary)' }}>Item:</strong> {selectedRequest.item_name} (x{selectedRequest.quantity})
+              </p>
               {selectedRequest.reason && (
-                <p className="mt-2"><strong>Reason:</strong> {selectedRequest.reason}</p>
+                <p style={{ color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
+                  <strong style={{ color: 'var(--text-primary)' }}>Reason:</strong> {selectedRequest.reason}
+                </p>
               )}
             </div>
 
-            <div className="pt-2 grid grid-cols-1 gap-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               {selectedRequest.status === 'pending' && (
-                <button 
+                <button
                   onClick={() => updateStatus(selectedRequest.id, 'accepted')}
-                  className="bg-blue-600 text-white font-medium py-2 rounded-lg hover:bg-blue-700 transition"
+                  className="accent-btn"
                 >
                   Accept Request
                 </button>
               )}
               {selectedRequest.status === 'accepted' && (
-                <button 
+                <button
                   onClick={() => updateStatus(selectedRequest.id, 'preparing')}
-                  className="bg-purple-600 text-white font-medium py-2 rounded-lg hover:bg-purple-700 transition"
+                  className="accent-btn"
                 >
                   Start Preparing
                 </button>
               )}
               {selectedRequest.status === 'preparing' && (
-                <button 
+                <button
                   onClick={() => updateStatus(selectedRequest.id, 'delivered')}
-                  className="bg-indigo-600 text-white font-medium py-2 rounded-lg hover:bg-indigo-700 transition"
+                  className="accent-btn"
                 >
                   Mark as Delivered
                 </button>
               )}
-              
-              <button 
+
+              <button
                 onClick={() => setSelectedRequest(null)}
-                className="border border-gray-300 text-gray-700 font-medium py-2 rounded-lg hover:bg-gray-50 transition"
+                className="neo-btn"
               >
                 Cancel
               </button>

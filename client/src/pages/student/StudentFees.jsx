@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../supabase';
-import { CreditCard, FileText, CheckCircle, AlertCircle, Clock } from 'lucide-react';
+import { CreditCard, FileText, AlertCircle, Clock } from 'lucide-react';
 
 export default function StudentFees() {
   const { profile } = useAuth();
@@ -47,73 +47,112 @@ export default function StudentFees() {
     alert("UPI Payment Gateway integration will be added in the final phase! For now, please pay via cash at the Accountant's office.");
   };
 
-  const statusStyles = {
-    'pending': 'bg-yellow-100 text-yellow-800',
-    'partially_paid': 'bg-blue-100 text-blue-800',
-    'paid': 'bg-green-100 text-green-800',
-    'overdue': 'bg-red-100 text-red-800'
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case 'pending':        return 'badge badge-pending';
+      case 'partially_paid': return 'badge badge-progress';
+      case 'paid':           return 'badge badge-done';
+      case 'overdue':        return 'badge badge-error';
+      default:               return 'badge badge-pending';
+    }
   };
 
   const formatText = (text) => text.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Hostel Fees & Payments</h1>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', fontFamily: "'Space Grotesk', sans-serif" }}>
+      {/* Header */}
+      <div>
+        <h1 className="page-title">Hostel Fees &amp; Payments</h1>
+        <p className="page-subtitle">Track your fee status and payment history</p>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Current Fee Overview */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-lg font-bold text-gray-900 flex items-center mb-6">
-              <CreditCard className="mr-2 text-blue-600" size={20} />
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }} className="lg:grid-cols-3">
+        {/* Current Fee Overview — takes 2/3 */}
+        <div style={{ gridColumn: 'span 2' }}>
+          <div className="glass-card" style={{ padding: '1.5rem' }}>
+            <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem' }}>
+              <CreditCard size={20} style={{ color: 'var(--accent)' }} />
               Current Academic Year Fees
             </h2>
 
             {loading ? (
-              <div className="py-8 text-center text-gray-500">Loading fee details...</div>
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                Loading fee details...
+              </div>
             ) : !feeRecord ? (
-              <div className="py-12 flex flex-col items-center justify-center text-gray-500 bg-gray-50 rounded-lg">
-                <AlertCircle size={48} className="text-gray-300 mb-4" />
+              <div style={{ padding: '3rem', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', background: 'var(--input-bg)', borderRadius: '10px', border: '1px solid var(--card-border)' }}>
+                <AlertCircle size={48} style={{ marginBottom: '1rem', opacity: 0.4 }} />
                 <p>Your fee structure has not been assigned yet.</p>
-                <p className="text-sm mt-2">Please contact the Accountant.</p>
+                <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>Please contact the Accountant.</p>
               </div>
             ) : (
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-100">
-                    <p className="text-sm text-gray-500 font-medium mb-1">Total Fees</p>
-                    <p className="text-2xl font-bold text-gray-900">₹{feeRecord.total_fees}</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                {/* Fee Stats */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
+                  {/* Total Fees */}
+                  <div style={{
+                    background: 'var(--input-bg)',
+                    border: '1px solid var(--card-border)',
+                    borderRadius: '10px',
+                    padding: '1rem'
+                  }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Total Fees</p>
+                    <p style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-primary)' }}>₹{feeRecord.total_fees}</p>
                   </div>
-                  <div className="bg-green-50 rounded-lg p-4 border border-green-100">
-                    <p className="text-sm text-green-600 font-medium mb-1">Amount Paid</p>
-                    <p className="text-2xl font-bold text-green-700">₹{feeRecord.amount_paid}</p>
+                  {/* Amount Paid */}
+                  <div style={{
+                    background: 'var(--success-bg)',
+                    border: '1px solid var(--success-border)',
+                    borderRadius: '10px',
+                    padding: '1rem'
+                  }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--success-color)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Amount Paid</p>
+                    <p style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--success-color)' }}>₹{feeRecord.amount_paid}</p>
                   </div>
-                  <div className="bg-red-50 rounded-lg p-4 border border-red-100">
-                    <p className="text-sm text-red-600 font-medium mb-1">Pending Balance</p>
-                    <p className="text-2xl font-bold text-red-700">
+                  {/* Pending */}
+                  <div style={{
+                    background: 'var(--error-bg)',
+                    border: '1px solid var(--error-border)',
+                    borderRadius: '10px',
+                    padding: '1rem'
+                  }}>
+                    <p style={{ fontSize: '0.75rem', color: 'var(--error-color)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Pending Balance</p>
+                    <p style={{ fontSize: '1.6rem', fontWeight: 800, color: 'var(--error-color)' }}>
                       ₹{(parseFloat(feeRecord.total_fees) - parseFloat(feeRecord.amount_paid)).toFixed(2)}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col md:flex-row justify-between items-center bg-blue-50 p-4 rounded-lg border border-blue-100">
-                  <div className="mb-4 md:mb-0">
-                    <div className="flex items-center space-x-2 mb-1">
-                      <span className="text-sm text-gray-600">Status:</span>
-                      <span className={`px-2 py-0.5 text-xs rounded uppercase font-bold tracking-wide ${statusStyles[feeRecord.status]}`}>
+                {/* Status + Pay Row */}
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '1rem',
+                  background: 'var(--input-bg)',
+                  border: '1px solid var(--card-border)',
+                  borderRadius: '10px',
+                  padding: '1rem 1.25rem'
+                }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Status:</span>
+                      <span className={getStatusBadgeClass(feeRecord.status)} style={{ textTransform: 'uppercase', fontSize: '0.7rem' }}>
                         {formatText(feeRecord.status)}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-600 flex items-center">
-                      <Clock size={14} className="mr-1" />
-                      Due Date: <strong className="ml-1 text-gray-900">{new Date(feeRecord.due_date).toLocaleDateString()}</strong>
+                    <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                      <Clock size={14} />
+                      Due Date: <strong style={{ color: 'var(--text-primary)', marginLeft: '0.25rem' }}>{new Date(feeRecord.due_date).toLocaleDateString()}</strong>
                     </p>
                   </div>
-                  
+
                   {feeRecord.status !== 'paid' && (
-                    <button 
+                    <button
                       onClick={handlePayNow}
-                      className="w-full md:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg font-medium shadow hover:bg-blue-700 transition"
+                      className="accent-btn"
                     >
                       Pay Pending Balance
                     </button>
@@ -125,43 +164,67 @@ export default function StudentFees() {
         </div>
 
         {/* Payment History */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden h-full">
-            <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <h2 className="text-lg font-bold text-gray-900 flex items-center">
-                <FileText className="mr-2 text-gray-500" size={20} />
-                Payment History
-              </h2>
+        <div style={{ gridColumn: 'span 1' }}>
+          <div className="glass-card" style={{ padding: 0, overflow: 'hidden', height: '100%' }}>
+            {/* Card Header */}
+            <div style={{
+              padding: '1.25rem 1.5rem',
+              borderBottom: '1px solid var(--divider)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <FileText size={20} style={{ color: 'var(--text-muted)' }} />
+              <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-primary)' }}>Payment History</h2>
             </div>
-            
-            <div className="p-0">
-              {loading ? (
-                <div className="p-8 text-center text-gray-500">Loading history...</div>
-              ) : history.length === 0 ? (
-                <div className="p-12 text-center text-gray-500">
-                  <p>No past payments found.</p>
-                </div>
-              ) : (
-                <ul className="divide-y divide-gray-100">
-                  {history.map((record) => (
-                    <li key={record.id} className="p-4 hover:bg-gray-50 transition">
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="font-bold text-gray-900">₹{record.amount}</span>
-                        <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-0.5 rounded uppercase">
-                          {record.method}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center text-sm">
-                        <span className="text-gray-600">{formatText(record.type)}</span>
-                        <span className="text-gray-400 text-xs">
-                          {new Date(record.created_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
+
+            {loading ? (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                Loading history...
+              </div>
+            ) : history.length === 0 ? (
+              <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                <p>No past payments found.</p>
+              </div>
+            ) : (
+              <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                {history.map((record) => (
+                  <li
+                    key={record.id}
+                    style={{
+                      padding: '1rem 1.5rem',
+                      borderBottom: '1px solid var(--divider)',
+                      transition: 'background 0.15s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--hover-row)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.35rem' }}>
+                      <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '1rem' }}>₹{record.amount}</span>
+                      <span style={{
+                        fontSize: '0.7rem',
+                        fontWeight: 600,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.06em',
+                        background: 'var(--badge-accent-bg)',
+                        color: 'var(--badge-accent-color)',
+                        border: '1px solid var(--badge-accent-border)',
+                        borderRadius: '4px',
+                        padding: '2px 7px'
+                      }}>
+                        {record.method}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>{formatText(record.type)}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                        {new Date(record.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>
