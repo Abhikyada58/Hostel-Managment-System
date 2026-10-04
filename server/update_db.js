@@ -12,7 +12,7 @@ async function updateDb() {
     await client.connect();
     console.log("Connected to PostgreSQL.");
 
-    const sqlPath = path.join(__dirname, '..', 'update_laundry_workflow.sql');
+    const sqlPath = path.join(__dirname, '..', 'update_storage_policies.sql');
     const sql = fs.readFileSync(sqlPath, 'utf8');
     
     await client.query(sql);
